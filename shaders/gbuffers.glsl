@@ -74,8 +74,6 @@ uniform float far;
 uniform float near;
 uniform sampler2D depthtex1;
 uniform sampler2D gaux2;
-
-#define cloud2d
 #define skystuff
 #define refutil
 #endif
@@ -84,7 +82,7 @@ uniform sampler2D gaux2;
 
 float bndither = texture2D(noisetex, gl_FragCoord.xy / 256.0).r;
 float invshadowres = 1.0 / shadowMapResolution;
-vec3 viewtoworldistribution(mat4 matrix, vec3 pos){ return mat3(matrix) * pos + matrix[3].xyz; }
+vec3 viewtoworld(mat4 matrix, vec3 pos){ return mat3(matrix) * pos + matrix[3].xyz; }
 
 float shadowpcf(sampler2D shadowtexx, vec3 shadowpos, float blurthick){
 	float result = 0.0;
@@ -111,8 +109,8 @@ float calcsdepth(vec3 shadowpos){
 #endif
 
 vec3 shposwbias(vec3 worldpos, float lightvis){
-	vec3 shadowpos = viewtoworldistribution(shadowModelView, worldpos);
-	shadowpos = viewtoworldistribution(shadowProjection, shadowpos);
+	vec3 shadowpos = viewtoworld(shadowModelView, worldpos);
+	shadowpos = viewtoworld(shadowProjection, shadowpos);
 	float dist = sdistort(shadowpos.xy, shadowDistortFactor);
 
 	shadowpos.xy /= dist;
@@ -125,8 +123,8 @@ vec3 shposwbias(vec3 worldpos, float lightvis){
 vec3 subsurfaces(vec3 currlight, vec3 worldpos, vec3 wslpos, float thickness){
 	if(thickness < 0.001) return currlight;
 
-	vec3 shadowpos = viewtoworldistribution(shadowModelView, worldpos);
-	shadowpos = viewtoworldistribution(shadowProjection, shadowpos);
+	vec3 shadowpos = viewtoworld(shadowModelView, worldpos);
+	shadowpos = viewtoworld(shadowProjection, shadowpos);
 	shadowpos.xy /= sdistort(shadowpos.xy, shadowDistortFactor);
 	shadowpos.z *= 0.25;
 	shadowpos = shadowpos * 0.5 + 0.5;
@@ -253,7 +251,7 @@ void calcforwardrr(inout vec4 albedo, vec3 normalmap, vec2 material, float shado
 
 	vec3 reflcolor = texture2D(gaux1, (touv(reflectedv) * vec2(256.0, 128.0) + vec2(18.0, 0)) / vec2(viewWidth, viewHeight)).rgb;
 
-	vec4 clouds2d = ccloud2d(reflectedv, wslpos, suncolor, mooncolor, zenithcolor);
+	vec4 clouds2d = texture2D(colortex4, (touv(reflectedv) * vec2(512.0, 256.0) + vec2(0.0, 129.0)) / vec2(viewWidth, viewHeight));
 	reflcolor = reflcolor * clouds2d.a + clouds2d.rgb;
 	reflcolor = reflcolor * (uv1.y * uv1.y);
 	suncolor *= shadowlum;

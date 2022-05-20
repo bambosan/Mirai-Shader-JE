@@ -85,6 +85,7 @@ void main(){
 	float lv = visibleggx(roughness, ndotv, ndotl);
 	vec3 lightcolor = texelFetch(colortex4, ivec2(3, 17), 0).rgb;
 	specref += lightcolor * fresnel * (ld * lv * tau * lightvis * ndotl);
+
 	if(texture2D(depthtex1, uv0).r >= 0.0){
 		color = mix(color, vec3(0.0), f0);
 		color += specref;
